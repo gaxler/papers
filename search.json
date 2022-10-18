@@ -1,0 +1,114 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Overview of papers",
+    "section": "",
+    "text": "Summaries of some of the papers I read in a searchable format.\n\n\n\nNaseer et al. (2021)\nBello (2021)\n\n\n\n\n\nBello, Irwan. 2021. “LambdaNetworks: Modeling Long-Range Interactions Without Attention.” CoRR abs/2102.08602. https://arxiv.org/abs/2102.08602.\n\n\nNaseer, Muzammal, Kanchana Ranasinghe, Salman Hameed Khan, Munawar Hayat, Fahad Shahbaz Khan, and Ming-Hsuan Yang. 2021. “Intriguing Properties of Vision Transformers.” In NeurIPS. https://arxiv.org/abs/2105.10497."
+  },
+  {
+    "objectID": "arch/vit.html",
+    "href": "arch/vit.html",
+    "title": "1  ViT",
+    "section": "",
+    "text": "Tip\n\n\n\nThis is an adaptation of transformer models to work with an image data. Transformers lack the inductive biases of CNNs so they need way more data to perform well. Key things for ViT is scaling the dataset size and pre-training.\nUsing huge datasets allows re-learning some of the inductive biases CNNs have. I.e. positional encodings learn image locations even though they are 1D."
+  },
+  {
+    "objectID": "arch/vit.html#key-points",
+    "href": "arch/vit.html#key-points",
+    "title": "1  ViT",
+    "section": "Key Points",
+    "text": "Key Points\n\nWhy is it a good idea to pre-train vs. use CNNs directly?\n\nTransformers allow easy multi modalities.\nXLA and other computational infrastructure exists to make transformers very efficient.\n\n\n\nWhat is the difference in the way Transformers process images vs. CNNs?\nTransformers are design to work on sets, so to make it work with image we need to somehow convert images to set. To turn sets into sequences we add positional encodings to our inputs so they will have the notion of order.\nThe way ViT adopt images to be used with transformers is by using 16x16 patches of raw pixels and transforms those with a linear transformation. The transformed vectors are the tokens.\nCNNs have a local view of the image, that is their receptive field starts small and grows as we more layers. On the other hand, transformers can see the whole image. Locality in ViT is in the form of image patches, so each token represents some local area, but the attention layer can see all the patches.\nPositional embeddings do improve performance, but using 1D is pretty much the same as using 2D. So it seems like the position is not really important, but more like the identity of the patch that matters. Patch distance seem to be encoded in the positional embeddings, also 2D structure seem to emerge from a 1D encoding, this is why hand-crafter 2D encoding doesn’t seem to help there.\nAs we go deeper in attention layers, the attention distance grows. That implies that initial layers learn local features and deeper layers have more complex global representations. This is similar to the way CNNs work.\n\n\nViT features vs. CNNS features\nViT features contain semantic features with high spatial resolution. Each attention layers sees full image. CNN features are localized and coarse. Each feature contains global info (e.g. x32 for the last layer of ResNet)\n\n\n\nViT vs. CNN Features"
+  },
+  {
+    "objectID": "arch/vit.html#questions",
+    "href": "arch/vit.html#questions",
+    "title": "1  ViT",
+    "section": "Questions?",
+    "text": "Questions?\n\nKeys are the most stable representations of an image (Why?)"
+  },
+  {
+    "objectID": "arch/vit.html#sources",
+    "href": "arch/vit.html#sources",
+    "title": "1  ViT",
+    "section": "Sources",
+    "text": "Sources\n\nDosovitskiy et al. (2020)\nAmir et al. (2021)\n\n\n\n\n\nAmir, Shir, Yossi Gandelsman, Shai Bagon, and Tali Dekel. 2021. “Deep ViT Features as Dense Visual Descriptors.” ArXiv abs/2112.05814.\n\n\nDosovitskiy, Alexey, Lucas Beyer, Alexander Kolesnikov, Dirk Weissenborn, Xiaohua Zhai, Thomas Unterthiner, Mostafa Dehghani, et al. 2020. “An Image Is Worth 16x16 Words: Transformers for Image Recognition at Scale.” arXiv. https://doi.org/10.48550/ARXIV.2010.11929."
+  },
+  {
+    "objectID": "transformers/how_vits_work.html",
+    "href": "transformers/how_vits_work.html",
+    "title": "2  How ViTs Work",
+    "section": "",
+    "text": "TL;DR\n\n\n\n\nAttention Layers are low pass filter and as such are better at detecting shape feature\nAttention aggregation is data specific, this seems to be the core advantage (and not the long range dependency).\nAttention make loss surface smoother (helps optimization) on the other hand loss functions are non-convex\nThis paper investigates how Multi-head Self Attention (MSA) works and compares properties of MSA layers to CNN layers. Both CNN and MSA have some good and bad properties, the authors propose an architecture that tries to exploit the cons of each."
+  },
+  {
+    "objectID": "transformers/how_vits_work.html#msa-are-good-at-detecting-shape",
+    "href": "transformers/how_vits_work.html#msa-are-good-at-detecting-shape",
+    "title": "2  How ViTs Work",
+    "section": "MSA are good at detecting shape",
+    "text": "MSA are good at detecting shape\nMSA are low-pass filters while CNNs are high pass filters.\nThis means that MSA should be more sensitive to shapes in the image vs. CNNs being better at detecting texture (Naseer et al. 2021)\nThe authors demonstrate the high/low pass divide by analyzing feature map frequencies. For conv-nets high frequencies in deeper feature are stronger while for MSA the picture is opposite, that is lower feature \n\n\n\n\n\n\nMSA vs. Conv Filters\n\n\n\nMSAs are data specific and channel agnostic, CNN are data agnostic and channel specific.\n\n\nTrained CNN models won’t change the way they aggregate feature into new features (won’t change filter weights). MSAs on the other hand will produce filter weights based on the data. CNN has a filter for each channel, MSA has a single weight for all channels."
+  },
+  {
+    "objectID": "transformers/how_vits_work.html#data-specific-filters-improve-performance",
+    "href": "transformers/how_vits_work.html#data-specific-filters-improve-performance",
+    "title": "2  How ViTs Work",
+    "section": "Data specific filters improve performance",
+    "text": "Data specific filters improve performance\nAttention mask is determined based on the input data, that is, the way you do the pooling is data dependent. The paper shows that probably this is the property that makes ViTs great and not the long range dependency. Also, introducing inductive bias to image data (making attention work on a local environment like convs) improves ViT performance."
+  },
+  {
+    "objectID": "transformers/how_vits_work.html#optimization-perspective",
+    "href": "transformers/how_vits_work.html#optimization-perspective",
+    "title": "2  How ViTs Work",
+    "section": "Optimization Perspective",
+    "text": "Optimization Perspective\nThis is of less interest to me, but paper re-affirms that MSA produce smoother loss surfaces. You can see the smoothness in smaller eigenvalues of the Hessian and smoother optimization trajectories for MSAs vs CNNs.\nOn the other hand, MSAs have a highly non-convex loss functions (vs. ResNets that are practically convex). It seems that large datasets help convexify the losses (why is that? I don’t have a good intuition on this point). Also, smoothing the loss landscape (by smoothing features before classification or using Sharpness Aware Minimization (Foret et al. 2020) helps reduce negative eignevalues for ViTs."
+  },
+  {
+    "objectID": "transformers/how_vits_work.html#questions",
+    "href": "transformers/how_vits_work.html#questions",
+    "title": "2  How ViTs Work",
+    "section": "Questions",
+    "text": "Questions\n\nWhat is the intuition behind larger dataset make the loss function of MSA more convex?\nWhy data specificity is a good thing? I would love to read more about this."
+  },
+  {
+    "objectID": "transformers/how_vits_work.html#sources",
+    "href": "transformers/how_vits_work.html#sources",
+    "title": "2  How ViTs Work",
+    "section": "Sources",
+    "text": "Sources\n\nPark and Kim (2022)\n\n\n\n\n\nForet, Pierre, Ariel Kleiner, Hossein Mobahi, and Behnam Neyshabur. 2020. “Sharpness-Aware Minimization for Efficiently Improving Generalization.”\n\n\nNaseer, Muzammal, Kanchana Ranasinghe, Salman Hameed Khan, Munawar Hayat, Fahad Shahbaz Khan, and Ming-Hsuan Yang. 2021. “Intriguing Properties of Vision Transformers.” In NeurIPS. https://arxiv.org/abs/2105.10497.\n\n\nPark, Namuk, and Songkuk Kim. 2022. “How Do Vision Transformers Work?” ArXiv abs/2202.06709. https://www.semanticscholar.org/paper/How-Do-Vision-Transformers-Work-Park-Kim/430bab3890e1e52c4c1f74900b0e408e47a1cb8f."
+  },
+  {
+    "objectID": "ssl/vito.html",
+    "href": "ssl/vito.html",
+    "title": "3  SSL Video Pre-training",
+    "section": "",
+    "text": "TL;DR\n\n\n\n\nRandom crops for video datasets need to be smaller because frame variability is larger than imagenet.\nReplace MoCLR’s average-pooling with small mask prediction network and do the pooling with it.\nVideo should be great for pertaining representation for images, you can see objects change shape and oriantation. For some reason representation pertained on video are not as good as representation pertained on ImageNet. This paper tries to explain why this is the case and proposes ways to close this gap."
+  },
+  {
+    "objectID": "ssl/vito.html#method",
+    "href": "ssl/vito.html#method",
+    "title": "3  SSL Video Pre-training",
+    "section": "Method",
+    "text": "Method\nMoCLR is the baseline contrastive learning method they compare against. The method produces multiple views of the same image, average-pools the feature map of all the views, and passes the averaged pooled feature through an MLP. The loss forces all views have the same reduced feature (trained with contrastive loss). The training is done with two copies of the same network, one being trained by gradient decent and the other by exponential moving average of the other."
+  },
+  {
+    "objectID": "ssl/vito.html#whats-new-here",
+    "href": "ssl/vito.html#whats-new-here",
+    "title": "3  SSL Video Pre-training",
+    "section": "What’s new here?",
+    "text": "What’s new here?\n\nLarger Random Sized Crops\nContrastive learning methods are designed to fit ImageNet like datasets. ImageNet means single object images and lower variability in image content. Lowe variability allows us to get away with aggressive cropping (8% of the original image). In videos (or natural datasets) aggressive cropping can get you a totally different semantic meaning.\n\n\nAttention Pooling\nIn videos we can do temporal augmentation (look at nearby frames as being similar). Here average pooling might not be as good. Instead of doing object tracking or something similar, they predict an attention mask and use it to do the pooling. The masking is done on multiple scales of the network and all pooled vectors get concatenated before going through the final MLP net. It seems that the attention masks learn to focus on similar stable features in the image pair. \n\n\nCurate dataset to match imagenet\nTasks that we use to measure the quality of a representation are imagenet biased so they do some curation to match distribution of videos to that of imagenet images (by running inference on frames and looking for imagenet categories)."
+  },
+  {
+    "objectID": "ssl/vito.html#sources",
+    "href": "ssl/vito.html#sources",
+    "title": "3  SSL Video Pre-training",
+    "section": "Sources",
+    "text": "Sources\n\nParthasarathy et al. (2022)\n\n\n\n\n\nParthasarathy, Nikhil, S. M. Ali Eslami, João Carreira, and Olivier J. H’enaff. 2022. “Self-Supervised Video Pretraining Yields Strong Image Representations.” In. https://www.semanticscholar.org/paper/Self-supervised-video-pretraining-yields-strong-Parthasarathy-Eslami/c95527eed7758904823eb43300044fbd0cb1881c."
+  },
+  {
+    "objectID": "references.html",
+    "href": "references.html",
+    "title": "References",
+    "section": "",
+    "text": "Amir, Shir, Yossi Gandelsman, Shai Bagon, and Tali Dekel. 2021.\n“Deep ViT Features as Dense Visual Descriptors.”\nArXiv abs/2112.05814.\n\n\nBello, Irwan. 2021. “LambdaNetworks: Modeling Long-Range\nInteractions Without Attention.” CoRR abs/2102.08602. https://arxiv.org/abs/2102.08602.\n\n\nDosovitskiy, Alexey, Lucas Beyer, Alexander Kolesnikov, Dirk\nWeissenborn, Xiaohua Zhai, Thomas Unterthiner, Mostafa Dehghani, et al.\n2020. “An Image Is Worth 16x16 Words: Transformers for Image\nRecognition at Scale.” arXiv. https://doi.org/10.48550/ARXIV.2010.11929.\n\n\nForet, Pierre, Ariel Kleiner, Hossein Mobahi, and Behnam Neyshabur.\n2020. “Sharpness-Aware Minimization for\nEfficiently Improving Generalization.”\n\n\nNaseer, Muzammal, Kanchana Ranasinghe, Salman Hameed Khan, Munawar\nHayat, Fahad Shahbaz Khan, and Ming-Hsuan Yang. 2021. “Intriguing\nProperties of Vision Transformers.” In NeurIPS. https://arxiv.org/abs/2105.10497.\n\n\nPark, Namuk, and Songkuk Kim. 2022. “How Do Vision Transformers\nWork?” ArXiv abs/2202.06709. https://www.semanticscholar.org/paper/How-Do-Vision-Transformers-Work-Park-Kim/430bab3890e1e52c4c1f74900b0e408e47a1cb8f.\n\n\nParthasarathy, Nikhil, S. M. Ali Eslami, João Carreira, and Olivier J.\nH’enaff. 2022. “Self-Supervised Video Pretraining Yields Strong\nImage Representations.” In. https://www.semanticscholar.org/paper/Self-supervised-video-pretraining-yields-strong-Parthasarathy-Eslami/c95527eed7758904823eb43300044fbd0cb1881c."
+  }
+]
