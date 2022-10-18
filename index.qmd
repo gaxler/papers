@@ -1,0 +1,9 @@
+# What is this? {.unnumbered}
+
+Summaries of some of the papers I read in a searchable format.
+
+## Plan for near future
+
+* @IntriguingPropsViT
+* @LambdaNets
+
